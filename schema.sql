@@ -78,8 +78,6 @@ ALTER SEQUENCE public.exams_id_seq OWNED BY public.exams.id;
 
 CREATE TABLE public.questions (
     id integer NOT NULL,
-    subject_id integer,
-    topic_id integer,
     question_text text NOT NULL,
     question_text_en text,
     type character varying(50) NOT NULL,
@@ -90,6 +88,7 @@ CREATE TABLE public.questions (
     answer_bn text,
     explanation text,
     explanation_bn text,
+    subject character varying(255),
     topic character varying(255),
     subtopic character varying(255),
     hint text,
@@ -180,7 +179,10 @@ CREATE TABLE public.submission_answers (
     is_correct boolean,
     marks_obtained numeric(5,2) DEFAULT 0,
     ai_marks numeric(5,2) DEFAULT 0,
-    ai_feedback text
+    ai_feedback text,
+    evaluation_status varchar(20) DEFAULT 'not_required',
+    evaluation_requested_at timestamp with time zone,
+    evaluation_completed_at timestamp with time zone
 );
 
 
@@ -534,22 +536,6 @@ ALTER TABLE ONLY public.exam_questions
 
 
 --
--- Name: questions questions_subject_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.questions
-    ADD CONSTRAINT questions_subject_id_fkey FOREIGN KEY (subject_id) REFERENCES public.subjects(id);
-
-
---
--- Name: questions questions_topic_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.questions
-    ADD CONSTRAINT questions_topic_id_fkey FOREIGN KEY (topic_id) REFERENCES public.topics(id);
-
-
---
 -- Name: submission_answers submission_answers_question_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -580,6 +566,219 @@ ALTER TABLE ONLY public.submissions
 ALTER TABLE ONLY public.topics
     ADD CONSTRAINT topics_subject_id_fkey FOREIGN KEY (subject_id) REFERENCES public.subjects(id);
 
+
+--
+-- Name: performance_reports; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.performance_reports (
+    id integer NOT NULL,
+    student_name character varying(255) NOT NULL,
+    start_date date NOT NULL,
+    end_date date NOT NULL,
+    total_answers_evaluated integer DEFAULT 0,
+    total_mcq_score numeric(10,2) DEFAULT 0,
+    total_ai_score numeric(10,2) DEFAULT 0,
+    overall_performance_rating varchar(20),
+    ai_feedback jsonb,
+    study_plan jsonb,
+    weakness_analysis jsonb,
+    strength_analysis jsonb,
+    recommended_topics jsonb,
+    report_status varchar(20) DEFAULT 'pending',
+    analysis_requested_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    analysis_completed_at timestamp with time zone
+);
+
+
+ALTER TABLE public.performance_reports OWNER TO postgres;
+
+--
+-- Name: performance_reports_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.performance_reports_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.performance_reports_id_seq OWNER TO postgres;
+
+--
+-- Name: performance_reports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.performance_reports_id_seq OWNED BY public.performance_reports.id;
+
+
+--
+-- Name: cached_subjects; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.cached_subjects (
+    id integer NOT NULL,
+    name character varying(255) UNIQUE NOT NULL,
+    is_active boolean DEFAULT true,
+    last_synced_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.cached_subjects OWNER TO postgres;
+
+--
+-- Name: cached_subjects_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.cached_subjects_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.cached_subjects_id_seq OWNER TO postgres;
+
+--
+-- Name: cached_subjects_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.cached_subjects_id_seq OWNED BY public.cached_subjects.id;
+
+--
+-- Name: cached_topics; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.cached_topics (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    subject character varying(255) NOT NULL,
+    is_active boolean DEFAULT true,
+    last_synced_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(name, subject)
+);
+
+
+ALTER TABLE public.cached_topics OWNER TO postgres;
+
+--
+-- Name: cached_topics_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.cached_topics_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.cached_topics_id_seq OWNER TO postgres;
+
+--
+-- Name: cached_topics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.cached_topics_id_seq OWNED BY public.cached_topics.id;
+
+--
+-- Name: cached_subtopics; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.cached_subtopics (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    subject character varying(255) NOT NULL,
+    topic character varying(255) NOT NULL,
+    is_active boolean DEFAULT true,
+    last_synced_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(name, subject, topic)
+);
+
+
+ALTER TABLE public.cached_subtopics OWNER TO postgres;
+
+--
+-- Name: cached_subtopics_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.cached_subtopics_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.cached_subtopics_id_seq OWNER TO postgres;
+
+--
+-- Name: cached_subtopics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.cached_subtopics_id_seq OWNED BY public.cached_subtopics.id;
+
+--
+-- Name: cached_subjects id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cached_subjects ALTER COLUMN id SET DEFAULT nextval('public.cached_subjects_id_seq'::regclass);
+
+--
+-- Name: cached_topics id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cached_topics ALTER COLUMN id SET DEFAULT nextval('public.cached_topics_id_seq'::regclass);
+
+--
+-- Name: cached_subtopics id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cached_subtopics ALTER COLUMN id SET DEFAULT nextval('public.cached_subtopics_id_seq'::regclass);
+
+--
+-- Name: cached_subjects cached_subjects_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cached_subjects
+    ADD CONSTRAINT cached_subjects_pkey PRIMARY KEY (id);
+
+--
+-- Name: cached_topics cached_topics_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cached_topics
+    ADD CONSTRAINT cached_topics_pkey PRIMARY KEY (id);
+
+--
+-- Name: cached_subtopics cached_subtopics_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cached_subtopics
+    ADD CONSTRAINT cached_subtopics_pkey PRIMARY KEY (id);
+
+--
+-- Indexes for performance
+--
+
+CREATE INDEX idx_cached_topics_subject ON public.cached_topics(subject);
+CREATE INDEX idx_cached_subtopics_subject_topic ON public.cached_subtopics(subject, topic);
+CREATE INDEX idx_cached_subjects_active ON public.cached_subjects(is_active);
+CREATE INDEX idx_cached_topics_active ON public.cached_topics(is_active);
+CREATE INDEX idx_cached_subtopics_active ON public.cached_subtopics(is_active);
 
 --
 -- PostgreSQL database dump complete

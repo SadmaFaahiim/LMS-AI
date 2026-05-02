@@ -49,21 +49,8 @@ class QuestionController {
       // Process each question
       for (const question of data) {
         try {
-          // Get or create subject (you might want to map based on topic)
-          const subjectId = await this.getOrCreateSubject(question.topic);
-
-          // Get or create topic
-          const topicId = await this.getOrCreateTopic(
-            subjectId,
-            question.topic,
-          );
-
-          // Prepare question data
-          const questionData = this.prepareQuestionData(
-            question,
-            subjectId,
-            topicId,
-          );
+          // Prepare question data (no longer needs IDs)
+          const questionData = this.prepareQuestionData(question);
 
           // Insert question
           const insertedId = await this.insertQuestion(questionData);
@@ -161,24 +148,25 @@ class QuestionController {
             // Forward to client
             res.write(`data: ${data}\n\n`);
 
-            // Handle "done"
-            try {
-              const parsed = JSON.parse(data);
-
-              if (parsed.stage === "done" && parsed.questions) {
-                await this.storeGeneratedQuestions(parsed.questions, {
-                  subject,
-                  topic,
-                  exam,
-                  grade,
-                  type,
-                  difficulty,
-                  language,
-                });
-              }
-            } catch (e) {
-              // ignore non-json
-            }
+            // NOTE: Auto-storage disabled - questions are now stored explicitly via /questions/store-rag
+            // This allows users to review questions before saving to database
+            //
+            // try {
+            //   const parsed = JSON.parse(data);
+            //   if (parsed.stage === "done" && parsed.questions) {
+            //     await this.storeGeneratedQuestions(parsed.questions, {
+            //       subject,
+            //       topic,
+            //       exam,
+            //       grade,
+            //       type,
+            //       difficulty,
+            //       language,
+            //     });
+            //   }
+            // } catch (e) {
+            //   // ignore non-json
+            // }
           }
         }
       });
@@ -218,15 +206,8 @@ class QuestionController {
    */
   async storeGeneratedQuestions(questions, metadata) {
     try {
-      const subjectId = await this.getOrCreateSubject(metadata.topic);
-      const topicId = await this.getOrCreateTopic(subjectId, metadata.topic);
-
       for (const question of questions) {
-        const questionData = this.prepareQuestionData(
-          question,
-          subjectId,
-          topicId,
-        );
+        const questionData = this.prepareQuestionData(question);
         questionData.metadata = JSON.stringify({
           generation_metadata: metadata,
           source_exam: metadata.exam,
@@ -244,7 +225,7 @@ class QuestionController {
   /**
    * Prepare question data for insertion
    */
-  prepareQuestionData(question, subjectId, topicId) {
+  prepareQuestionData(question) {
     // Determine if evaluation is needed based on question type
     const needEvaluation = ["short", "broad", "creative"].includes(
       question.type,
@@ -257,8 +238,6 @@ class QuestionController {
     }
 
     const baseData = {
-      subject_id: subjectId,
-      topic_id: topicId,
       question_text: question.question_text,
       question_text_en: question.question_text_en || null,
       type: question.type,
@@ -269,6 +248,7 @@ class QuestionController {
       answer_bn: question.answer_bn || null,
       explanation: question.explanation || null,
       explanation_bn: question.explanation_bn || null,
+      subject: question.subject || null,
       topic: question.topic || null,
       subtopic: question.subtopic || null,
       hint: question.hint || null,
@@ -292,19 +272,18 @@ class QuestionController {
   async insertQuestion(questionData) {
     const query = `
             INSERT INTO questions (
-                subject_id, topic_id, question_text, question_text_en, type, difficulty, marks,
-                options, answer, answer_bn, explanation, explanation_bn, topic, subtopic, hint,
+                question_text, question_text_en, type, difficulty, marks,
+                options, answer, answer_bn, explanation, explanation_bn,
+                subject, topic, subtopic, hint,
                 source, source_reference, need_evaluation, status, is_published, has_figure,
                 has_formula, bloom_level, metadata, created_at, updated_at
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
-                $16, $17, $18, $19, $20, $21, $22, $23, $24, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
+                $15, $16, $17, $18, $19, $20, $21, $22, $23, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
             ) RETURNING id
         `;
 
     const values = [
-      questionData.subject_id,
-      questionData.topic_id,
       questionData.question_text,
       questionData.question_text_en,
       questionData.type,
@@ -315,6 +294,7 @@ class QuestionController {
       questionData.answer_bn,
       questionData.explanation,
       questionData.explanation_bn,
+      questionData.subject,
       questionData.topic,
       questionData.subtopic,
       questionData.hint,
@@ -331,48 +311,6 @@ class QuestionController {
 
     const result = await pool.query(query, values);
     return result.rows[0].id;
-  }
-
-  /**
-   * Get or create subject
-   */
-  async getOrCreateSubject(subjectName) {
-    if (!subjectName) return null;
-
-    // Try to find existing subject
-    const findQuery = "SELECT id FROM subjects WHERE LOWER(name) = LOWER($1)";
-    const findResult = await pool.query(findQuery, [subjectName]);
-
-    if (findResult.rows.length > 0) {
-      return findResult.rows[0].id;
-    }
-
-    // Create new subject
-    const insertQuery = "INSERT INTO subjects (name) VALUES ($1) RETURNING id";
-    const insertResult = await pool.query(insertQuery, [subjectName]);
-    return insertResult.rows[0].id;
-  }
-
-  /**
-   * Get or create topic
-   */
-  async getOrCreateTopic(subjectId, topicName) {
-    if (!topicName || !subjectId) return null;
-
-    // Try to find existing topic
-    const findQuery =
-      "SELECT id FROM topics WHERE subject_id = $1 AND LOWER(name) = LOWER($2)";
-    const findResult = await pool.query(findQuery, [subjectId, topicName]);
-
-    if (findResult.rows.length > 0) {
-      return findResult.rows[0].id;
-    }
-
-    // Create new topic
-    const insertQuery =
-      "INSERT INTO topics (subject_id, name) VALUES ($1, $2) RETURNING id";
-    const insertResult = await pool.query(insertQuery, [subjectId, topicName]);
-    return insertResult.rows[0].id;
   }
 
   /**
