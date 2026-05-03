@@ -179,7 +179,7 @@ CREATE TABLE public.submission_answers (
     is_correct boolean,
     marks_obtained numeric(5,2) DEFAULT 0,
     ai_marks numeric(5,2) DEFAULT 0,
-    ai_feedback text,
+    ai_feedback jsonb,
     evaluation_status varchar(20) DEFAULT 'not_required',
     evaluation_requested_at timestamp with time zone,
     evaluation_completed_at timestamp with time zone
@@ -613,6 +613,12 @@ ALTER TABLE public.performance_reports_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.performance_reports_id_seq OWNED BY public.performance_reports.id;
+
+--
+-- Name: performance_reports id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.performance_reports ALTER COLUMN id SET DEFAULT nextval('public.performance_reports_id_seq'::regclass);
 
 
 --

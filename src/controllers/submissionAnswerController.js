@@ -78,7 +78,9 @@ class SubmissionAnswerController {
         is_correct: row.is_correct,
         marks_obtained: row.marks_obtained,
         ai_marks: row.ai_marks,
-        ai_feedback: row.ai_feedback ? JSON.parse(row.ai_feedback) : null,
+        ai_feedback: row.ai_feedback
+          ? (typeof row.ai_feedback === 'string' ? JSON.parse(row.ai_feedback) : row.ai_feedback)
+          : null,
         evaluation_status: row.evaluation_status,
         evaluation_requested_at: row.evaluation_requested_at,
         evaluation_completed_at: row.evaluation_completed_at,
@@ -164,7 +166,9 @@ class SubmissionAnswerController {
         is_correct: row.is_correct,
         marks_obtained: row.marks_obtained,
         ai_marks: row.ai_marks,
-        ai_feedback: row.ai_feedback ? JSON.parse(row.ai_feedback) : null,
+        ai_feedback: row.ai_feedback
+          ? (typeof row.ai_feedback === 'string' ? JSON.parse(row.ai_feedback) : row.ai_feedback)
+          : null,
         evaluation_status: row.evaluation_status,
         evaluation_requested_at: row.evaluation_requested_at,
         evaluation_completed_at: row.evaluation_completed_at,
