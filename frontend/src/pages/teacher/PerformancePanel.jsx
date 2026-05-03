@@ -393,21 +393,208 @@ const PerformancePanel = () => {
                 Recommended Study Plan
               </h3>
               <div className='prose max-w-none'>
-                {typeof report.study_plan === "string" ? (
-                  <p className='text-gray-700 whitespace-pre-line'>
-                    {report.study_plan}
-                  </p>
-                ) : (
-                  <div className='text-gray-700'>
-                    {report.study_plan.en && (
-                      <p className='mb-2'>{report.study_plan.en}</p>
-                    )}
-                    {report.study_plan.bn && (
-                      <p className='text-gray-600 italic'>
-                        {report.study_plan.bn}
-                      </p>
-                    )}
+                {/* Handle structured study plan */}
+                {typeof report.study_plan === 'object' &&
+                 !Array.isArray(report.study_plan) &&
+                 (report.study_plan.resources ||
+                   report.study_plan.daily_schedule ||
+                   report.study_plan.short_term_goals ||
+                   report.study_plan.long_term_goals) ? (
+                  <div className='space-y-4'>
+                    {/* Resources Section */}
+                    {report.study_plan.resources &&
+                     report.study_plan.resources.length > 0 && (
+                       <div className='bg-white p-4 rounded-lg border border-purple-200'>
+                         <h4 className='font-semibold text-purple-800 mb-3 flex items-center'>
+                           <svg
+                             className='w-5 h-5 mr-2'
+                             fill='none'
+                             stroke='currentColor'
+                             viewBox='0 0 24 24'>
+                             <path
+                               strokeLinecap='round'
+                               strokeLinejoin='round'
+                               strokeWidth={2}
+                               d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'
+                             />
+                           </svg>
+                           Learning Resources
+                         </h4>
+                         <ul className='list-disc list-inside text-gray-700 space-y-1'>
+                           {report.study_plan.resources.map(
+                             (resource, idx) => (
+                               <li key={idx} className='text-sm'>
+                                 {resource}
+                               </li>
+                             )
+                           )}
+                         </ul>
+                       </div>
+                     )}
+
+                    {/* Daily Schedule Section */}
+                    {report.study_plan.daily_schedule &&
+                     Object.keys(report.study_plan.daily_schedule)
+                       .length > 0 && (
+                       <div className='bg-white p-4 rounded-lg border border-purple-200'>
+                         <h4 className='font-semibold text-purple-800 mb-3 flex items-center'>
+                           <svg
+                             className='w-5 h-5 mr-2'
+                             fill='none'
+                             stroke='currentColor'
+                             viewBox='0 0 24 24'>
+                             <path
+                               strokeLinecap='round'
+                               strokeLinejoin='round'
+                               strokeWidth={2}
+                               d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
+                             />
+                           </svg>
+                           Daily Study Schedule
+                         </h4>
+                         <div className='overflow-x-auto'>
+                           <table className='min-w-full divide-y divide-purple-200'>
+                             <thead className='bg-purple-50'>
+                               <tr>
+                                 <th className='px-4 py-2 text-left text-xs font-semibold text-purple-800 uppercase tracking-wider'>
+                                   Activity
+                                 </th>
+                                 <th className='px-4 py-2 text-left text-xs font-semibold text-purple-800 uppercase tracking-wider'>
+                                   Duration
+                                 </th>
+                               </tr>
+                             </thead>
+                             <tbody className='divide-y divide-purple-200 bg-white'>
+                               {Object.entries(
+                                 report.study_plan.daily_schedule
+                               ).map(([activity, duration], idx) => (
+                                 <tr
+                                   key={idx}
+                                   className={
+                                     idx % 2 === 0
+                                       ? 'bg-white'
+                                       : 'bg-purple-50/30'
+                                   }>
+                                   <td className='px-4 py-3 text-sm text-gray-700 font-medium'>
+                                     {activity}
+                                   </td>
+                                   <td className='px-4 py-3 text-sm text-purple-700 font-semibold'>
+                                     {duration}
+                                   </td>
+                                 </tr>
+                               ))}
+                             </tbody>
+                           </table>
+                         </div>
+                       </div>
+                     )}
+
+                    {/* Short-term Goals Section */}
+                    {report.study_plan.short_term_goals &&
+                     report.study_plan.short_term_goals.length >
+                       0 && (
+                       <div className='bg-white p-4 rounded-lg border border-purple-200'>
+                         <h4 className='font-semibold text-purple-800 mb-3 flex items-center'>
+                           <svg
+                             className='w-5 h-5 mr-2'
+                             fill='none'
+                             stroke='currentColor'
+                             viewBox='0 0 24 24'>
+                             <path
+                               strokeLinecap='round'
+                               strokeLinejoin='round'
+                               strokeWidth={2}
+                               d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+                             />
+                           </svg>
+                           Short-term Goals
+                         </h4>
+                         <ul className='space-y-2'>
+                           {report.study_plan.short_term_goals.map(
+                             (goal, idx) => (
+                               <li
+                                 key={idx}
+                                 className='flex items-start'>
+                                 <div className='flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-bold mr-3 mt-0.5'>
+                                   {idx + 1}
+                                 </div>
+                                 <span className='text-sm text-gray-700 flex-1'>
+                                   {goal}
+                                 </span>
+                               </li>
+                             )
+                           )}
+                         </ul>
+                       </div>
+                     )}
+
+                    {/* Long-term Goals Section */}
+                    {report.study_plan.long_term_goals &&
+                     report.study_plan.long_term_goals.length > 0 && (
+                       <div className='bg-white p-4 rounded-lg border border-purple-200'>
+                         <h4 className='font-semibold text-purple-800 mb-3 flex items-center'>
+                           <svg
+                             className='w-5 h-5 mr-2'
+                             fill='none'
+                             stroke='currentColor'
+                             viewBox='0 0 24 24'>
+                             <path
+                               strokeLinecap='round'
+                               strokeLinejoin='round'
+                               strokeWidth={2}
+                               d='M13 10V3L4 14h7v7l9-11h-7z'
+                             />
+                           </svg>
+                           Long-term Goals
+                         </h4>
+                         <ul className='space-y-2'>
+                           {report.study_plan.long_term_goals.map(
+                             (goal, idx) => (
+                               <li
+                                 key={idx}
+                                 className='flex items-start'>
+                                 <svg
+                                   className='w-5 h-5 text-purple-600 mr-3 mt-0.5 flex-shrink-0'
+                                   fill='none'
+                                   stroke='currentColor'
+                                   viewBox='0 0 24 24'>
+                                   <path
+                                     strokeLinecap='round'
+                                     strokeLinejoin='round'
+                                     strokeWidth={2}
+                                     d='M5 13l4 4L19 7'
+                                   />
+                                 </svg>
+                                 <span className='text-sm text-gray-700'>
+                                   {goal}
+                                 </span>
+                               </li>
+                             )
+                           )}
+                         </ul>
+                       </div>
+                     )}
                   </div>
+                ) : (
+                  /* Fallback for old format */
+                  <>
+                    {typeof report.study_plan === 'string' ? (
+                      <p className='text-gray-700 whitespace-pre-line'>
+                        {report.study_plan}
+                      </p>
+                    ) : (
+                      <div className='text-gray-700'>
+                        {report.study_plan.en && (
+                          <p className='mb-2'>{report.study_plan.en}</p>
+                        )}
+                        {report.study_plan.bn && (
+                          <p className='text-gray-600 italic'>
+                            {report.study_plan.bn}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -433,13 +620,64 @@ const PerformancePanel = () => {
               </h3>
               <div className='flex flex-wrap gap-2'>
                 {Array.isArray(report.recommended_topics) ? (
-                  report.recommended_topics.map((topic, idx) => (
-                    <span
-                      key={idx}
-                      className='px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium'>
-                      {topic}
-                    </span>
-                  ))
+                  <div className='w-full space-y-3'>
+                    {report.recommended_topics.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className='bg-white p-4 rounded-lg border border-orange-200 shadow-sm'
+                      >
+                        <div className='flex justify-between items-start mb-2'>
+                          <h4 className='font-semibold text-orange-800 text-lg'>
+                            {typeof item === 'string'
+                              ? item
+                              : item.topic || 'Topic'}
+                          </h4>
+                          {typeof item !== 'string' && item.priority && (
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-medium ${
+                                item.priority === 'high'
+                                  ? 'bg-red-100 text-red-800'
+                                  : item.priority === 'medium'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                              {item.priority}
+                            </span>
+                          )}
+                        </div>
+                        {typeof item !== 'string' && item.subject && (
+                          <p className='text-sm text-gray-600 mb-2'>
+                            <span className='font-medium'>Subject:</span>{' '}
+                            {item.subject}
+                          </p>
+                        )}
+                        {typeof item !== 'string' &&
+                          item.estimated_time && (
+                            <p className='text-sm text-gray-600 mb-2'>
+                              <span className='font-medium'>
+                                Estimated Time:
+                              </span>{' '}
+                              {item.estimated_time}
+                            </p>
+                          )}
+                        {typeof item !== 'string' &&
+                          item.resources &&
+                          Array.isArray(item.resources) &&
+                          item.resources.length > 0 && (
+                            <div className='mt-3'>
+                              <p className='text-sm font-medium text-gray-700 mb-1'>
+                                Resources:
+                              </p>
+                              <ul className='list-disc list-inside text-sm text-gray-600 space-y-1'>
+                                {item.resources.map((resource, ridx) => (
+                                  <li key={ridx}>{resource}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                      </div>
+                    ))}
+                  </div>
                 ) : typeof report.recommended_topics === "string" ? (
                   <span className='px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium'>
                     {report.recommended_topics}
