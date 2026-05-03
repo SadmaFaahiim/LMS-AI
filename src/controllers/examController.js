@@ -191,10 +191,16 @@ class ExamController {
           }
 
           // Insert into submission_answers with evaluation status
+          // Only set evaluation_requested_at for pending evaluations
           const insertResult = await client.query(
-            `INSERT INTO submission_answers
+            evaluationStatus === "pending"
+              ? `INSERT INTO submission_answers
                         (submission_id, question_id, selected_option, answer_text, is_correct, marks_obtained, evaluation_status, evaluation_requested_at)
                         VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
+                        RETURNING id`
+              : `INSERT INTO submission_answers
+                        (submission_id, question_id, selected_option, answer_text, is_correct, marks_obtained, evaluation_status)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7)
                         RETURNING id`,
             [
               submissionId,

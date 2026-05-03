@@ -1,84 +1,200 @@
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
-export default function StreamingProgress({ current = 0, total = 0, message = '', error = false, stageHistory = [] }) {
-  const progress = total > 0 ? (current / total) * 100 : 0;
+export default function StreamingProgress({
+  current = 0,
+  total = 0,
+  message = "",
+  error = false,
+  stageHistory = [],
+}) {
+  const progress = total > 0 ? Math.round((current / total) * 100) : 0;
 
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-6">
-      {/* Animated Spinner */}
-      <motion.div
-        className="relative w-20 h-20 mb-6"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-      >
-        <div className="absolute inset-0 border-4 border-bg-tertiary rounded-full"></div>
-        <div className={`absolute inset-0 border-4 border-t-transparent rounded-full ${error ? 'border-error' : 'border-accent-primary'}`}></div>
-      </motion.div>
-
-      {/* Stage Messages History (Claude-like) */}
-      {stageHistory.length > 0 && (
-        <div className="w-full max-w-md mb-6 space-y-2">
-          {stageHistory.map((stage, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: idx * 0.1 }}
-              className="flex items-center gap-2 text-sm text-text-secondary"
-            >
-              <span className="text-accent-primary">✓</span>
-              <span>{stage.message}</span>
-            </motion.div>
-          ))}
+    <div style={{ background: "#0e0e0f", borderRadius: 16, padding: 28 }}>
+      {/* Header: spinner + status + counter */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          marginBottom: 24,
+        }}>
+        <motion.div
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            flexShrink: 0,
+            border: `2px solid #1f1f22`,
+            borderTopColor: error ? "#f87171" : "#7c6ef7",
+          }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+        />
+        <div style={{ flex: 1 }}>
+          <p
+            style={{
+              color: error ? "#f87171" : "#ffffff",
+              fontSize: 15,
+              fontWeight: 500,
+              marginBottom: 4,
+            }}>
+            {error ? "Generation failed" : message || "Initializing..."}
+          </p>
+          {!error && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <motion.span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "#7c6ef7",
+                  display: "block",
+                }}
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{
+                  duration: 1.8,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              <span style={{ fontSize: 13, color: "#6b6b78" }}>
+                AI is working
+              </span>
+            </div>
+          )}
         </div>
-      )}
-
-      {/* Current Message */}
-      <div className={`text-center mb-4 ${error ? 'text-error' : 'text-text-primary'}`}>
-        {error ? (
-          <>
-            <p className="font-semibold mb-2">Generation Failed</p>
-            <p className="text-sm">{message}</p>
-          </>
-        ) : (
-          <p className="text-lg font-medium">{message || 'Initializing...'}</p>
+        {total > 0 && (
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <div
+              style={{
+                fontSize: 26,
+                fontWeight: 500,
+                color: "#ffffff",
+                lineHeight: 1,
+              }}>
+              {current}
+              <span style={{ fontSize: 15, color: "#44444f" }}> / {total}</span>
+            </div>
+            <div style={{ fontSize: 11, color: "#44444f", marginTop: 3 }}>
+              questions
+            </div>
+          </div>
         )}
       </div>
 
-      {/* Progress Counter */}
-      {total > 0 && (
-        <div className="text-center mb-4">
-          <div className="text-4xl font-bold text-text-primary mb-2">
-            {current} <span className="text-text-secondary">/ {total}</span>
-          </div>
-          <div className="text-sm text-text-secondary">questions generated</div>
-        </div>
-      )}
-
-      {/* Progress Bar */}
+      {/* Progress bar */}
       {total > 0 && !error && (
-        <div className="w-full max-w-md mb-6">
-          <div className="h-2 bg-bg-tertiary rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-accent-primary to-accent-hover"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.5 }}
-            />
+        <div
+          style={{
+            height: 3,
+            background: "#1f1f22",
+            borderRadius: 2,
+            overflow: "hidden",
+            marginBottom: 20,
+          }}>
+          <motion.div
+            style={{ height: "100%", background: "#7c6ef7", borderRadius: 2 }}
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          />
+        </div>
+      )}
+
+      {/* Stage history */}
+      {stageHistory.length > 0 && (
+        <div
+          style={{
+            background: "#111113",
+            border: "0.5px solid #1f1f22",
+            borderRadius: 10,
+            padding: "14px 16px",
+          }}>
+          <p
+            style={{
+              fontSize: 10,
+              color: "#44444f",
+              fontFamily: "monospace",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              marginBottom: 10,
+            }}>
+            Progress
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {stageHistory.map((stage, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: idx * 0.08 }}
+                style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div
+                  style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    background: "#0d2010",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}>
+                  <svg width='10' height='10' viewBox='0 0 10 10' fill='none'>
+                    <path
+                      d='M2 5l2.5 2.5L8 3'
+                      stroke='#4ade80'
+                      strokeWidth='1.5'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                    />
+                  </svg>
+                </div>
+                <span style={{ fontSize: 13, color: "#6b6b78" }}>
+                  {stage.message}
+                </span>
+              </motion.div>
+            ))}
+
+            {/* current active stage indicator */}
+            {!error && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <motion.div
+                  style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: "50%",
+                    flexShrink: 0,
+                    border: "1.5px solid #2a2a2e",
+                    borderTopColor: "#7c6ef7",
+                  }}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                />
+                <span style={{ fontSize: 13, color: "#c4c4d0" }}>
+                  {message || "Working..."}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Pulsing Indicator */}
-      {!error && (
-        <motion.div
-          className="mt-6 flex items-center gap-2 text-accent-primary text-sm"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <span className="w-2 h-2 bg-accent-primary rounded-full"></span>
-          <span>AI is generating questions...</span>
-        </motion.div>
+      {/* Error detail */}
+      {error && message && (
+        <div
+          style={{
+            marginTop: 16,
+            background: "#1f1010",
+            border: "0.5px solid #3d1515",
+            borderRadius: 10,
+            padding: 14,
+          }}>
+          <p style={{ fontSize: 13, color: "#f87171", lineHeight: 1.6 }}>
+            {message}
+          </p>
+        </div>
       )}
     </div>
   );

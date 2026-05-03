@@ -21,6 +21,7 @@ export default function TeacherLayout() {
               <Link to="/teacher/questions" className="text-sm text-text-secondary hover:text-accent-primary transition-colors">Questions</Link>
               <Link to="/teacher/exams" className="text-sm text-text-secondary hover:text-accent-primary transition-colors">Exams</Link>
               <Link to="/teacher/grading" className="text-sm text-text-secondary hover:text-accent-primary transition-colors">Grading</Link>
+              <Link to="/teacher/performance" className="text-sm text-text-secondary hover:text-accent-primary transition-colors">Performance</Link>
               <Link to="/teacher/feedback" className="text-sm text-text-secondary hover:text-accent-primary transition-colors">Feedback</Link>
             </nav>
           </div>

@@ -21,6 +21,7 @@ export default function StudentLayout() {
               <Link to="/student/exams" className="text-sm text-text-secondary hover:text-accent-secondary transition-colors">Exams</Link>
               <Link to="/student/submissions" className="text-sm text-text-secondary hover:text-accent-secondary transition-colors">Submissions</Link>
               <Link to="/student/results" className="text-sm text-text-secondary hover:text-accent-secondary transition-colors">Results</Link>
+              <Link to="/student/performance" className="text-sm text-text-secondary hover:text-accent-secondary transition-colors">Performance</Link>
             </nav>
           </div>
           <div className="flex items-center gap-4">

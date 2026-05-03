@@ -39,9 +39,12 @@ export const api = {
   submitExam: (data) => apiClient.post('/exams/submit', data),
   getExamSubmissions: (id) => apiClient.get(`/exams/${id}/submissions`),
 
-  // Submissions
-  getSubmissionAnswer: (id) => apiClient.get(`/exams/submissions/answers/${id}`),
+  // Submissions & Grading
+  getSubmissionDetails: (id) => apiClient.get(`/submissions/${id}`),
+  updateSubmissionGrades: (id, data) => apiClient.put(`/submissions/${id}/grades`, data),
+  publishSubmission: (id, isPublished) => apiClient.put(`/submissions/${id}/publish`, { is_published: isPublished }),
   getSubmissions: (params) => apiClient.get('/submissions', { params }),
+  getSubmissionAnswer: (id) => apiClient.get(`/exams/submissions/answers/${id}`),
 
   // Evaluation
   getEvaluationStatus: (id) => apiClient.get(`/submission-answers/${id}/evaluation-status`),

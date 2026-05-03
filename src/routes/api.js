@@ -5,6 +5,7 @@ const evaluationController = require("../controllers/evaluationController");
 const performanceController = require("../controllers/performanceController");
 const subjectController = require("../controllers/subjectController");
 const submissionAnswerController = require("../controllers/submissionAnswerController");
+const gradingController = require("../controllers/gradingController");
 
 const router = express.Router();
 
@@ -29,9 +30,16 @@ router.post("/questions/publish", (req, res) => questionController.publishQuesti
 // Exam routes
 router.get("/exams", (req, res) => examController.listExams(req, res));
 router.get("/exams/:id", (req, res) => examController.getExam(req, res));
+router.get("/exams/:id/submissions", (req, res) => gradingController.getExamSubmissions(req, res));
 router.get("/exams/submissions/answers/:id", (req, res) => examController.getSubmissionAnswerById(req, res));
 router.post("/exams", (req, res) => examController.createExam(req, res));
 router.post("/exams/submit", (req, res) => examController.submitExam(req, res));
+
+// Grading routes
+router.get("/submissions/:id", (req, res) => gradingController.getSubmissionDetails(req, res));
+router.put("/submissions/:id/grades", (req, res) => gradingController.updateGrades(req, res));
+router.put("/submissions/:id/publish", (req, res) => gradingController.publishSubmission(req, res));
+router.get("/submissions", (req, res) => gradingController.getStudentSubmissions(req, res));
 
 // Submission answer routes (for RAG API to fetch answer data)
 router.post("/submission-answers/bulk", (req, res) => submissionAnswerController.bulkGetSubmissionAnswers(req, res));

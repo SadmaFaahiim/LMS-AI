@@ -10,22 +10,23 @@ export default function StudentSubmissions() {
 
   useEffect(() => {
     fetchSubmissions();
-    // Poll for status updates every 5 seconds
+    // Poll for status updates every 30 seconds
     const interval = setInterval(() => {
       fetchSubmissions(true);
-    }, 5000);
+    }, 30000); // 30 seconds
 
+    // Cleanup function - destroys interval on component unmount
     return () => clearInterval(interval);
   }, []);
 
   const fetchSubmissions = async (silent = false) => {
     try {
       if (!silent) setLoading(true);
-      // TODO: Need to implement this endpoint
-      // const { data } = await api.getSubmissions({ student_name: session.studentName });
-      // setSubmissions(data.data || []);
-      // For now, set empty array
-      setSubmissions([]);
+      const { data } = await api.getSubmissions({
+        student_name: session.studentName,
+        is_completed: true
+      });
+      setSubmissions(data.data || []);
     } catch (error) {
       console.error('Failed to fetch submissions:', error);
     } finally {
@@ -167,23 +168,38 @@ export default function StudentSubmissions() {
                     </div>
                   </div>
 
-                  {/* Score (if completed) */}
+                  {/* Score (if completed and published) */}
                   {submission.status === 'completed' && (
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-text-primary">
-                        {submission.score || 0}
-                      </p>
-                      <p className="text-xs text-text-secondary">Score</p>
+                      {submission.is_published ? (
+                        <>
+                          <p className="text-2xl font-bold text-text-primary">
+                            {submission.score || 0}
+                          </p>
+                          <p className="text-xs text-text-secondary">Score</p>
+                        </>
+                      ) : (
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-warning">
+                            Pending Publication
+                          </p>
+                          <p className="text-xs text-text-secondary">
+                            Teacher will publish soon
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {/* View Details Button */}
-                  <button
-                    onClick={() => window.location.href = `/student/results?submission=${submission.id}`}
-                    className="px-4 py-2 border border-bg-tertiary text-text-secondary rounded text-sm hover:border-accent-secondary hover:text-text-primary transition-colors"
-                  >
-                    View Details
-                  </button>
+                  {submission.is_published && (
+                    <button
+                      onClick={() => window.location.href = `/student/results?submission=${submission.id}`}
+                      className="px-4 py-2 border border-bg-tertiary text-text-secondary rounded text-sm hover:border-accent-secondary hover:text-text-primary transition-colors"
+                    >
+                      View Details
+                    </button>
+                  )}
                 </div>
 
                 {/* Progress indicator for processing */}

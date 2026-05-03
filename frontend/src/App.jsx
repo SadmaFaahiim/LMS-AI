@@ -6,10 +6,12 @@ import StudentLayout from './pages/student/StudentLayout';
 import TeacherQuestions from './pages/teacher/Questions';
 import TeacherExams from './pages/teacher/Exams';
 import TeacherGrading from './pages/teacher/Grading';
+import TeacherPerformancePanel from './pages/teacher/PerformancePanel';
 import StudentQuestions from './pages/student/Questions';
 import StudentExams from './pages/student/Exams';
 import StudentSubmissions from './pages/student/Submissions';
 import StudentResults from './pages/student/Results';
+import StudentPerformanceDashboard from './pages/student/PerformanceDashboard';
 import { requireTeacherRole, requireStudentRole } from './lib/session';
 
 function ProtectedTeacherRoute({ children }) {
@@ -37,6 +39,7 @@ function App() {
             <Route path="questions" element={<TeacherQuestions />} />
             <Route path="exams" element={<TeacherExams />} />
             <Route path="grading" element={<TeacherGrading />} />
+            <Route path="performance" element={<TeacherPerformancePanel />} />
             <Route path="feedback" element={<div className="text-text-primary">Feedback Page - Coming Soon</div>} />
           </Route>
 
@@ -49,6 +52,7 @@ function App() {
             <Route path="exams" element={<StudentExams />} />
             <Route path="submissions" element={<StudentSubmissions />} />
             <Route path="results" element={<StudentResults />} />
+            <Route path="performance" element={<StudentPerformanceDashboard />} />
           </Route>
         </Routes>
       </BrowserRouter>

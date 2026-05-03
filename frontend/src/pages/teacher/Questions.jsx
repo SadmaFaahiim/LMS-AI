@@ -38,6 +38,10 @@ export default function TeacherQuestions() {
   const handleGenerate = async (params) => {
     setGenerationMode('generating');
     setSheetOpen(true); // Open sheet immediately
+
+    // Clear all previous generation state
+    setStageMessages([]);
+    setGeneratedQuestions([]);
     setStreamProgress({ current: 0, total: 0, message: 'Initializing...', error: false });
 
     try {
@@ -239,6 +243,8 @@ export default function TeacherQuestions() {
     if (confirm('Discard all generated questions?')) {
       setGeneratedQuestions([]);
       setGenerationMode('idle');
+      setStageMessages([]);
+      setStreamProgress({ current: 0, total: 0, message: '', error: false });
     }
   };
 
@@ -255,6 +261,8 @@ export default function TeacherQuestions() {
     setSheetOpen(false); // Close sheet
     setGeneratedQuestions([]);
     setGenerationMode('idle');
+    setStageMessages([]);
+    setStreamProgress({ current: 0, total: 0, message: '', error: false });
 
     // Refresh questions list in background
     await fetchQuestions();

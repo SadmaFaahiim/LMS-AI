@@ -11,12 +11,20 @@ export default function StudentExams() {
   const [answers, setAnswers] = useState({});
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [timerInterval, setTimerInterval] = useState(null);
 
   const session = getSession();
 
   useEffect(() => {
     fetchExams();
-  }, []);
+
+    // Cleanup function - clears timer on component unmount
+    return () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    };
+  }, [timerInterval]);
 
   const fetchExams = async () => {
     try {
@@ -54,12 +62,16 @@ export default function StudentExams() {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
+          setTimerInterval(null);
           handleSubmitExam();
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
+
+    // Store interval reference for cleanup
+    setTimerInterval(interval);
   };
 
   const handleAnswerChange = (questionId, answer) => {
@@ -70,7 +82,16 @@ export default function StudentExams() {
   };
 
   const handleSubmitExam = async () => {
+    // Prevent duplicate submissions
+    if (submitting) return;
+
     if (!confirm('Are you sure you want to submit your exam?')) return;
+
+    // Clear timer if running
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
 
     setSubmitting(true);
 
