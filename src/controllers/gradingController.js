@@ -236,7 +236,7 @@ class GradingController {
         });
       }
 
-      const client = await pool.pool.connect();
+      const client = await pool.connect();
       try {
         await client.query("BEGIN");
 
