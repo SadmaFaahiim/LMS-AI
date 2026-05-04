@@ -428,7 +428,7 @@ const PerformanceDashboard = ({ studentName }) => {
                                         key={idx}
                                         className='bg-white p-3 rounded border border-green-200'>
                                         <p className='font-medium text-green-700'>
-                                          {subject.topic || subject}
+                                          {subject.subject || subject.topic || 'Unknown Subject'}
                                         </p>
                                         {subject.reason && (
                                           <p className='text-sm text-gray-600 mt-1'>
@@ -508,7 +508,7 @@ const PerformanceDashboard = ({ studentName }) => {
                                         key={idx}
                                         className='bg-white p-3 rounded border border-red-200'>
                                         <p className='font-medium text-red-700'>
-                                          {subject.topic}
+                                          {subject.subject || subject.topic || 'Unknown Subject'}
                                         </p>
                                         <p className='text-sm text-gray-600 mt-1'>
                                           {subject.reason}
